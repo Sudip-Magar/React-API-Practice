@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { fetchRoom } from '../redux/slice/roomApi';
 import Slider from 'react-slick';
 import { useForm } from 'react-hook-form';
 import { bookingCreate } from '../redux/slice/bookingSlice';
+import NepaliDate from "nepali-date-converter";
 
 const Booking = () => {
     const { register, handleSubmit, setError, formState: { errors } } = useForm();
@@ -65,12 +66,42 @@ const Booking = () => {
     const room = data?.find((r) => r.id === Number(id));
     const { name } = location.state || {};
 
+    const [checkinNepali, setCheckinNepali] = useState(null);
+    const [checkoutNepali, setCheckoutNepali] = useState(null);
+
+    useEffect(() => {
+        if (!checkinObj || !checkoutObj) return;
+
+        setTimeout(() => {
+            const bsCheckin = new NepaliDate(checkinObj);
+            const bsCheckout = new NepaliDate(checkoutObj);
+
+            setCheckinNepali(bsCheckin.format("YYYY-MM-DD"));
+            setCheckoutNepali(bsCheckout.format("YYYY-MM-DD"));
+        }, 0)
+    }, [])
+
     const onSubmit = async (data) => {
         try {
-            const response = await dispatch(bookingCreate(data)).unwrap();
-        } catch(error){
-            console.log("catch",error.errors);
-            if(error.errors){
+            console.log("nepali checkin", checkinNepali);
+            console.log("nepali checkout", checkoutNepali);
+            console.log("checkout", checkin);
+            console.log("checkout", checkout);
+
+            const finalData = {
+                ...data,
+                total_nights: totalNights,
+                booking_date_en: checkinObj,
+                arrival_date_en: checkinObj,
+                departure_date_en: checkoutObj,
+                room_id: id
+            }
+            console.log(finalData);
+
+            const response = await dispatch(bookingCreate(finalData)).unwrap();
+        } catch (error) {
+            console.log("catch", error.errors);
+            if (error.errors) {
                 Object.keys(error.errors).forEach((field) => {
                     setError(field, {
                         type: 'server',
@@ -79,7 +110,7 @@ const Booking = () => {
                 });
             };
         }
-    } 
+    }
 
 
     //  Loading state
@@ -102,7 +133,7 @@ const Booking = () => {
                         <div className='grid grid-cols-2 gap-2'>
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="name">Name:</label>
-                                <input {...register('booked_by', {required: "Guest Name is Required!"})}
+                                <input {...register('booked_by', { required: "Guest Name is Required!" })}
                                     className='w-full border border-gray-300 rounded-lg py-2 px-3'
                                     type="text" id='name'
                                     placeholder='Enter Name'
@@ -114,7 +145,7 @@ const Booking = () => {
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="email">Email:</label>
-                                <input {...register('email', {required: "Email Address is Required!"})}
+                                <input {...register('email', { required: "Email Address is Required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-2 px-3'
                                     type="email" id='email'
                                     placeholder='Enter Email'
@@ -126,54 +157,72 @@ const Booking = () => {
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="phone">Phone:</label>
-                                <input {...register('phone')}
+                                <input {...register('phone', { required: "Phone Number is required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-2 px-3'
                                     type="number" id='phone'
                                     placeholder='Enter Phone Number'
                                 />
+                                {errors.phone && (
+                                    <p className='text-xs text-red-500 mt-2'>{errors.phone.message}</p>
+                                )}
                             </div>
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="food_type">Food Type:</label>
-                                <input {...register('food_type')}
+                                <input {...register('food_type', { required: "Food Type is Required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-2 px-3'
                                     type="text" id='food_type'
                                     placeholder='Enter Food Type'
                                 />
+                                {errors.food_type && (
+                                    <p className='text-xs text-red-500 mt-2'>{errors.food_type.message}</p>
+                                )}
                             </div>
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="arrival_time">Arrival Time:</label>
-                                <input {...register('arrival_time')}
+                                <input {...register('arrival_time', { required: "Arrival Time is Required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-1.75 px-3'
                                     type="time" id='arrival_time'
                                     placeholder='Enter Arrival time' />
+                                {errors.arrival_time && (
+                                    <p className='text-xs text-red-500 mt-2'>{errors.arrival_time.message}</p>
+                                )}
                             </div>
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="departure_time">Arrival Time:</label>
-                                <input {...register('departure_time')}
+                                <input {...register('departure_time', { required: "Departure time is Required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-1.75 px-3'
                                     type="time" id='departure_time'
                                     placeholder='Enter departure Time' />
+                                {errors.departure_time && (
+                                    <p className='text-xs text-red-500 mt-2'>{errors.departure_time.message}</p>
+                                )}
                             </div>
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="no_of_adults">No. of Adults:</label>
-                                <input {...register('no_of_adults')}
+                                <input {...register('no_of_adults', { required: "No. of Adult field is Required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-2 px-3'
                                     type="number" id='no_of_adults'
                                     placeholder='Enter No. of Adults'
                                 />
+                                {errors.no_of_adults && (
+                                    <p className='text-xs text-red-500 mt-2'>{errors.no_of_adults.message}</p>
+                                )}
                             </div>
 
                             <div className='mb-2'>
                                 <label className='mb-1 inline-block ms-1' htmlFor="no_of_children">No. of Children:</label>
-                                <input {...register('no_of_children')}
+                                <input {...register('no_of_children', { required: "No. of children is Required!" })}
                                     className='w-full border border-gray-300 rounded-md text-xs py-2 px-3'
                                     type="number" id='no_of_children'
                                     placeholder='Enter No. of Children'
                                 />
+                                {errors.no_of_children && (
+                                    <p className='text-xs text-red-500 mt-2'>{errors.no_of_children.message}</p>
+                                )}
                             </div>
 
                             <div className='mb-2'>

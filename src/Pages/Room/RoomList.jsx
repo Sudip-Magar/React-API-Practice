@@ -44,6 +44,7 @@ const RoomList = () => {
         }));
     }, [checkinDate, checkoutDate, guestNo]);
 
+
     // Filtered rooms
     const filteredRooms = useMemo(() => {
         return data.filter(room => {
@@ -162,9 +163,9 @@ const RoomList = () => {
                 {/* Rooms List */}
                 <div className="flex-1 flex flex-col gap-4">
                     {filteredRooms.length === 0 && (
-                       <div className='flex justify-center items-center w-full h-full '>
-                         <p className="text-gray-500 text-sm font-semibold">No rooms match your filters.</p>
-                       </div>
+                        <div className='flex justify-center items-center w-full h-full '>
+                            <p className="text-gray-500 text-sm font-semibold">No rooms match your filters.</p>
+                        </div>
                     )}
                     {filteredRooms.map(room => (
                         <div
